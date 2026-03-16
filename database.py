@@ -102,11 +102,9 @@ def init_db():
             )
         """)
 
-        # DROP e CREATE VIEW
-        cursor.execute("DROP VIEW IF EXISTS view_ausencias")
-
+        # CREATE OR REPLACE VIEW (compatível com PostgreSQL)
         cursor.execute("""
-            CREATE VIEW IF NOT EXISTS view_ausencias AS
+            CREATE OR REPLACE VIEW view_ausencias AS
             SELECT
                 ausencias.id,
                 ausencias.tipo_doc,
