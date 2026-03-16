@@ -42,3 +42,6 @@ Thumbs.db
 data/*.csv
 !data/turmas_professores.csv
 !data/dados_2025_ausencias.csv
+
+# Scripts locais com senhas
+setup_local_database.py

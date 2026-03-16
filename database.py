@@ -190,8 +190,7 @@ def import_turmas_csv(caminho_csv="data/turmas_professores.csv"):
                     )
         conn.commit()
 
-def import_ausencias_csv(caminho_csv="data/dados_2025_ausencias.csv"):
-    """Importar ausências de CSV"""
+def import_ausencias_csv(caminho_csv):
     with get_connection() as conn:
         cursor = conn.cursor()
 
