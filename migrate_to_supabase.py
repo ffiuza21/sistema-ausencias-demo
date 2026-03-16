@@ -11,7 +11,7 @@ import os
 SQLITE_PATH = "controle.db"
 
 # Cole aqui a connection string do Supabase
-POSTGRES_URL = "postgresql://postgres:SUA_SENHA@db.xxxxx.supabase.co:5432/postgres"
+POSTGRES_URL = "postgresql://postgres.ihkfneymtqifxkfxfbpm:SUA_SENHA@aws-1-sa-east-1.pooler.supabase.com:6543/postgres"
 
 # ========== FUNÇÕES ==========
 
