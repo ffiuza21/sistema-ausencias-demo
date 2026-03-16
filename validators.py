@@ -17,10 +17,27 @@ def normalize_nome(nome):
     return nome.upper()                 # caixa alta
 
 def format_data_dma(data):
-    return datetime.fromisoformat(data).strftime("%d/%m/%Y")
-
+    """Formata data para dd/mm/aaaa - aceita string ou objeto date/datetime"""
+    if isinstance(data, str):
+        # Se for string vazia, retorna vazio
+        if not data:
+            return ""
+        # Converte string ISO para datetime
+        data = datetime.fromisoformat(data)
+    # Se já for date/datetime, formata diretamente
+    return data.strftime("%d/%m/%Y")
+ 
 def format_data_dm(data):
-    return datetime.fromisoformat(data).strftime("%d/%m - %H:%M")
+    """Formata data para dd/mm - HH:MM - aceita string ou objeto datetime"""
+    if isinstance(data, str):
+        # Se for string vazia, retorna vazio
+        if not data:
+            return ""
+        # Converte string ISO para datetime
+        data = datetime.fromisoformat(data)
+    # Se já for datetime, formata diretamente
+    return data.strftime("%d/%m - %H:%M")
+ 
 
 
 
