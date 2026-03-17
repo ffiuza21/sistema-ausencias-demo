@@ -4,3 +4,8 @@ enableCORS = false
 
 [browser]
 gatherUsageStats = false
+
+[client]
+# Habilita o botão de trocar tema
+showSidebarNavigation = true
+toolbarMode = "auto"
