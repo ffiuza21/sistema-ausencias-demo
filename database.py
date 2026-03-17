@@ -226,6 +226,7 @@ def import_ausencias_csv(caminho_csv):
         conn.commit()
 
 #-------- TURMAS E PROFESSORES --------
+@st.cache_data(ttl=300)
 def get_turmas():
     """Retornar lista com todas as turmas"""
     with get_connection() as conn:
@@ -233,6 +234,7 @@ def get_turmas():
         cursor.execute("SELECT DISTINCT turma FROM turmas_professores ORDER BY turma")
         return [linha[0] for linha in cursor.fetchall()]
 
+@st.cache_data(ttl=300)
 def get_professores():
     """Retornar lista com todos os professores"""
     with get_connection() as conn:
@@ -240,6 +242,7 @@ def get_professores():
         cursor.execute("SELECT DISTINCT professor FROM turmas_professores ORDER BY professor")
         return [linha[0] for linha in cursor.fetchall()]
 
+@st.cache_data(ttl=60)
 def get_professor_da_turma(turma):
     """Retornar professor de turma passada como argumento se existir"""
     with get_connection() as conn:
@@ -252,6 +255,7 @@ def get_professor_da_turma(turma):
         professor_turma = cursor.fetchone()
         return professor_turma[0] if professor_turma else ""
 
+@st.cache_data(ttl=60)
 def get_turmas_por_professor(nome_professor):
     """Retorna a lista de turmas vinculadas a um professor específico"""
     with get_connection() as conn:
