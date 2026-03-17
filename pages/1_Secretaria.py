@@ -109,7 +109,7 @@ def modal_editar_ausencia(registro):
    # Tipo doc
     doc_edit = st.radio("Documento", ["DECLARACAO", "ATESTADO MEDICO"], horizontal=True, index=0 if registro["Tipo Doc"] == "DECLARACAO" else 1)
 
-    cpf_input_edit = st.text_input("CPF", max_chars=11, placeholder="Digite apenas números", value=registro["CPF"])
+    cpf_input_edit = st.text_input("CPF", max_chars=14, placeholder="Digite apenas números", value=registro["CPF"])
     cpf_normalizado_edit = val.normalize_cpf(cpf_input_edit)
     cpf_valido_edit = val.validate_cpf(cpf_normalizado_edit)
     if cpf_input_edit and not cpf_valido_edit:
