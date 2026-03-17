@@ -22,6 +22,7 @@ def modal_gerenciar_professores():
     
     # Aba 1 - editar professores
     with tab1:
+        st.cache_data.clear()
         professores = db.get_professores()
         turmas = db.get_turmas()
         
@@ -55,6 +56,7 @@ def modal_gerenciar_professores():
     
     # Aba 2 - Nova Turma
     with tab2:
+        st.cache_data.clear()
         st.write("### :material/new_label: Cadastrar Nova Turma")
         
         col3, col4 = st.columns(2)
