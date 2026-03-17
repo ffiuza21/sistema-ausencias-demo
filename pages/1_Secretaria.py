@@ -126,14 +126,18 @@ def modal_editar_ausencia(registro):
 
     col1, col2 = st.columns(2)
     with col1:
-        turma1_edit = st.selectbox("Nº da Turma 1", options=lista_turmas, index= lista_turmas.index(turma1_salva), key="turma1_edit")
+        # Busca índice da turma1, com fallback para 0 se não encontrar
+        index_turma1 = lista_turmas.index(turma1_salva) if turma1_salva in lista_turmas else 0
+        turma1_edit = st.selectbox("Nº da Turma 1", options=lista_turmas, index=index_turma1, key="turma1_edit")
     with col2:
         professor_1 = db.get_professor_da_turma(turma1_edit) if turma1_edit else ""
         st.text_input("Professor Turma 1", value=professor_1, disabled=True)
 
     col3, col4 = st.columns(2)
     with col3:
-        turma2_edit = st.selectbox("Nº da Turma 2", options=lista_turmas, index= lista_turmas.index(turma2_salva), key="turma2_edit")
+        # Busca índice da turma2, com fallback para 0 se não encontrar
+        index_turma2 = lista_turmas.index(turma2_salva) if turma2_salva in lista_turmas else 0
+        turma2_edit = st.selectbox("Nº da Turma 2", options=lista_turmas, index=index_turma2, key="turma2_edit")
     with col4:
         professor_2 = db.get_professor_da_turma(turma2_edit) if turma2_edit else ""
         st.text_input("Professor Turma 2", value=professor_2, disabled=True)
