@@ -1,5 +1,4 @@
 import streamlit as st
-import sqlite3
 import database as db
 import validators as val
 import layout as ly
@@ -13,18 +12,95 @@ ly.apply_layout()
 
 # ---------- PROTEÇÃO DA PÁGINA ----------
 perm.require_page_access("Professores")
+
+# ---------- FUNÇÃO CARD PROFESSOR ----------
+def exibir_card_professor(professor, turmas, index):
+    turmas_prof = db.get_turmas_por_professor(professor)
+
+    with st.container(border=True):
+        col1, col2 = st.columns([3,1])
+        with col1:
+            st.markdown(f"### :material/person: {professor}")
+        with col2:
+            st.markdown(f"**{len(turmas_prof)}** turmas")
+        
+        with st.expander(":material/edit: Editar", expanded=False):
+            nome_edit = st.text_input("Renomear professor:", value=professor, key=f"edit_{professor}_{index}", label_visibility="collapsed")
+            nome_edit_normalizado = val.normalize_nome(nome_edit)
+            turmas_do_prof = db.get_turmas_por_professor(professor)
+            
+            st.write("**Turmas:**")
+            turmas_selecionadas = st.multiselect(
+                "Selecione ou digite turmas",
+                options=list(set(turmas + turmas_do_prof)),
+                default=turmas_do_prof,
+                key=f"turmas_{professor}_{index}",
+                label_visibility="collapsed"
+            )
+        
+        # Botões
+        col3, col4 = st.columns(2)
+        
+        with col3:
+            if st.button(":material/save: Salvar Alterações", key=f"save_{professor}_{index}", use_container_width=True, type="secondary"):
+                if db.update_vinculo_professor(professor, nome_edit_normalizado, turmas_selecionadas):
+                    st.success("✅ Salvo!")
+                    # Limpa cache das listas
+                    if "modal_professores" in st.session_state:
+                        del st.session_state["modal_professores"]
+                    if "modal_turmas" in st.session_state:
+                        del st.session_state["modal_turmas"]
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.error("❌ Erro ao salvar")
+        
+        with col4:
+            if st.button(":material/delete: Excluir Professor", key=f"del_{professor}_{index}", use_container_width=True, type="primary"):
+                st.session_state[f"confirmar_exclusao_prof_{professor}"] = True
+        
+        # Confirmação de exclusão
+        if st.session_state.get(f"confirmar_exclusao_prof_{professor}"):
+            st.warning(f"⚠️ Tem certeza que deseja excluir {professor}")
+            
+            col5, col6 = st.columns(2)
+            with col5:
+                if st.button("✅ Excluir", key=f"conf_del_{professor}_{index}", use_container_width=True, type="primary"):
+                    if db.update_vinculo_professor(professor, professor, []):
+                        st.success("✅ Professor excluído!")
+                        del st.session_state[f"confirmar_exclusao_prof_{professor}"]
+                        # Limpa cache
+                        if "modal_professores" in st.session_state:
+                            del st.session_state["modal_professores"]
+                        if "modal_turmas" in st.session_state:
+                            del st.session_state["modal_turmas"]
+                        time.sleep(0.5)
+                        st.rerun()
+            
+            with col6:
+                if st.button("❌ Cancelar", key=f"canc_del_{professor}_{index}", use_container_width=True):
+                    del st.session_state[f"confirmar_exclusao_prof_{professor}"]
+                    st.rerun()
+
 # ---------- MODAL ----------
 @st.dialog(":material/settings: Gerenciar Professores e Turmas", width="large")
 def modal_gerenciar_professores():
+    
+    # CARREGA DADOS UMA VEZ e guarda em session_state
+    if "modal_professores" not in st.session_state:
+        st.session_state.modal_professores = db.get_professores()
+    
+    if "modal_turmas" not in st.session_state:
+        st.session_state.modal_turmas = db.get_turmas()
+    
+    professores = st.session_state.modal_professores
+    turmas = st.session_state.modal_turmas
     
     # Abas
     tab1, tab2 = st.tabs([":material/group: Editar Professores", ":material/add: Nova Turma"])
     
     # Aba 1 - editar professores
     with tab1:
-        professores = db.get_professores()
-        turmas = db.get_turmas()
-        
         if not professores:
             st.info("📭 Nenhum professor cadastrado ainda.")
         else:
@@ -89,69 +165,15 @@ def modal_gerenciar_professores():
                 # Salva
                 if db.update_vinculo_professor(novo_prof_normalizado, novo_prof_normalizado, vinc_existentes):
                     st.success(f"✅ Turma {nova_turma} registrada para {novo_prof_normalizado}!")
+                    # Limpa cache
+                    if "modal_professores" in st.session_state:
+                        del st.session_state["modal_professores"]
+                    if "modal_turmas" in st.session_state:
+                        del st.session_state["modal_turmas"]
                     time.sleep(1)
                     st.rerun()
                 else:
                     st.error("❌ Erro ao salvar no banco de dados.")
-
-# ---------- FUNÇÃO CARD PROFESSOR ----------
-def exibir_card_professor(professor, turmas, index):
-    turmas_prof = db.get_turmas_por_professor(professor)
-
-    with st.container(border=True):
-        col1, col2 = st.columns([3,1])
-        with col1:
-            st.markdown(f"### :material/person: {professor}")
-        with col2:
-            st.markdown(f"**{len(turmas_prof)}** turmas")
-        
-        with st.expander(":material/edit: Editar", expanded=False):
-            nome_edit = st.text_input("Renomear professor:", value=professor, key=f"edit_{professor}_{index}", label_visibility="collapsed")
-            nome_edit_normalizado = val.normalize_nome(nome_edit)
-            turmas_do_prof = db.get_turmas_por_professor(professor)
-            
-            st.write("**Turmas:**")
-            turmas_selecionadas = st.multiselect(
-                "Selecione ou digite turmas",
-                options=list(set(turmas + turmas_do_prof)),
-                default=turmas_do_prof,
-                key=f"turmas_{professor}_{index}",
-                label_visibility="collapsed"
-            )
-        
-        # Botões
-        col3, col4 = st.columns(2)
-        
-        with col3:
-            if st.button(":material/save: Salvar Alterações", key=f"save_{professor}_{index}", use_container_width=True, type="secondary"):
-                if db.update_vinculo_professor(professor, nome_edit_normalizado, turmas_selecionadas):
-                    st.success("✅ Salvo!")
-                    time.sleep(0.5)
-                    st.rerun()
-                else:
-                    st.error("❌ Erro ao salvar")
-        
-        with col4:
-            if st.button(":material/delete: Excluir Professor", key=f"del_{professor}_{index}", use_container_width=True, type="primary"):
-                st.session_state[f"confirmar_exclusao_prof_{professor}"] = True
-        
-        # Confirmação de exclusão
-        if st.session_state.get(f"confirmar_exclusao_prof_{professor}"):
-            st.warning(f"⚠️ Tem certeza que deseja excluir {professor}")
-            
-            col5, col6 = st.columns(2)
-            with col5:
-                if st.button("✅ Excluir", key=f"conf_del_{professor}_{index}", use_container_width=True, type="primary"):
-                    if db.update_vinculo_professor(professor, professor, []):
-                        st.success("✅ Professor excluído!")
-                        del st.session_state[f"confirmar_exclusao_prof_{professor}"]
-                        time.sleep(0.5)
-                        st.rerun()
-            
-            with col6:
-                if st.button("❌ Cancelar", key=f"canc_del_{professor}_{index}", use_container_width=True):
-                    del st.session_state[f"confirmar_exclusao_prof_{professor}"]
-                    st.rerun()
 
 # ---------- INTERFACE ----------
 st.title(":material/group: Professores")
@@ -225,8 +247,6 @@ if st.button(":material/search: Pesquisar Ausências"):
     st.dataframe(df, column_config={"ID": None, "Tipo Doc": None, "Data Registro": None}, hide_index=True)
 
 # ========== BOTÃO GERENCIAR PROFESSORES (CONDICIONAL) ==========
-# APENAS ADMIN e COORDENADOR podem ver/acessar
-# Professores e Diretor NÃO veem este botão
 if perm.can_perform_action("editar_professores"):
     if st.button(":material/settings: Gerenciar Professores e Turmas"):
         modal_gerenciar_professores()
