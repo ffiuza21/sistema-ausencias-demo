@@ -313,14 +313,54 @@ def update_vinculo_professor(nome_original, nome_novo, turmas_finais):
 
 #-------- AUSÊNCIAS --------
 def insert_ausencia(tipo_doc, cpf, nome_aluno, turma_1, turma_2, ausencia_inicio, ausencia_fim) -> bool:
-    """Inserir nova ausência"""
+    """Inserir nova ausência com verificação de duplicata (considera turmas em qualquer ordem)"""
     turma_2 = turma_2 or ""
     data_ausencia = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+ 
     try:
         with get_connection() as conn:
             cursor = conn.cursor()
-
+            # ========== VERIFICAÇÃO DE DUPLICATA ==========
+            if DATABASE_URL:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM ausencias 
+                    WHERE cpf = %s 
+                    AND ausencia_inicio = %s 
+                    AND ausencia_fim = %s
+                    AND (
+                        (turma_1 = %s AND (turma_2 = %s OR turma_2 = ''))
+                        OR 
+                        (turma_1 = %s AND turma_2 = %s)
+                        OR
+                        (turma_2 = %s AND turma_1 = %s)
+                    )
+                """, (cpf, ausencia_inicio, ausencia_fim, 
+                      turma_1, turma_2,
+                      turma_2, turma_1,
+                      turma_1, turma_2))
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM ausencias 
+                    WHERE cpf = ? 
+                    AND ausencia_inicio = ? 
+                    AND ausencia_fim = ?
+                    AND (
+                        (turma_1 = ? AND (turma_2 = ? OR turma_2 = ''))
+                        OR 
+                        (turma_1 = ? AND turma_2 = ?)
+                        OR
+                        (turma_2 = ? AND turma_1 = ?)
+                    )
+                """, (cpf, ausencia_inicio, ausencia_fim, 
+                      turma_1, turma_2,
+                      turma_2, turma_1,
+                      turma_1, turma_2))
+            
+            count = cursor.fetchone()[0]
+            if count > 0:
+                return False
+            
+            # ========== INSERÇÃO NORMAL ==========
             if DATABASE_URL:
                 cursor.execute("""
                     INSERT INTO ausencias (
@@ -340,7 +380,7 @@ def insert_ausencia(tipo_doc, cpf, nome_aluno, turma_1, turma_2, ausencia_inicio
             
             conn.commit()
         return True           
-
+ 
     except Exception:
         return False
 
