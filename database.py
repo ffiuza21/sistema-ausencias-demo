@@ -274,24 +274,25 @@ def update_vinculo_professor(nome_original, nome_novo, turmas_finais):
             cursor = conn.cursor()
             placeholder = "%s" if DATABASE_URL else "?"
             
-            # 1. Atualiza nome do professor
+            # 1. PRIMEIRO: Remove turmas desmarcadas (usando nome ORIGINAL)
+            if turmas_finais:
+                placeholders = ','.join([placeholder] * len(turmas_finais))
+                query = f"DELETE FROM turmas_professores WHERE professor = {placeholder} AND turma NOT IN ({placeholders})"
+                cursor.execute(query, (nome_original, *turmas_finais))
+            else:
+                # Se não tem turmas finais, remove TODAS as turmas do professor
+                cursor.execute(
+                    f"DELETE FROM turmas_professores WHERE professor = {placeholder}",
+                    (nome_original,)
+                )
+            
+            # 2. SEGUNDO: Atualiza nome do professor nas turmas RESTANTES
             cursor.execute(
                 f"UPDATE turmas_professores SET professor = {placeholder} WHERE professor = {placeholder}",
                 (nome_novo, nome_original)
             )
             
-            # 2. Remove turmas desmarcadas
-            if turmas_finais:
-                placeholders = ','.join([placeholder] * len(turmas_finais))
-                query = f"DELETE FROM turmas_professores WHERE professor = {placeholder} AND turma NOT IN ({placeholders})"
-                cursor.execute(query, (nome_novo, *turmas_finais))
-            else:
-                cursor.execute(
-                    f"DELETE FROM turmas_professores WHERE professor = {placeholder}",
-                    (nome_novo,)
-                )
-            
-            # 3. Insere ou atualiza turmas
+            # 3. TERCEIRO: Insere ou atualiza turmas selecionadas (com nome NOVO)
             for turma in turmas_finais:
                 if DATABASE_URL:
                     cursor.execute("""
@@ -306,6 +307,10 @@ def update_vinculo_professor(nome_original, nome_novo, turmas_finais):
                     """, (turma.strip(), nome_novo))
             
             conn.commit()
+            
+            # 4. Limpa cache após modificação
+            st.cache_data.clear()
+            
             return True
     except Exception as e:
         st.error(f"Erro no Banco de Dados: {e}")
