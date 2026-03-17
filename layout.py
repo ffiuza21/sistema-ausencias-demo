@@ -52,15 +52,25 @@ def apply_layout():
 
     st.markdown("""
         <style>
-        /* Esconde elementos padrão do Streamlit */
-        #MainMenu {visibility: hidden;}
+        /* Esconde footer padrão do Streamlit */
         footer {visibility: hidden;}
+        
+        /* Customiza o menu para mostrar só o botão de tema */
+        [data-testid="stToolbar"] {
+            display: flex !important;
+            visibility: visible !important;
+        }
+        
+        /* Esconde itens do menu exceto configurações */
+        #MainMenu > div > ul > li:not(:last-child) {
+            display: none;
+        }
         
         /* Rodapé minimalista - apenas texto */
         .dev-footer {
             position: fixed;
             bottom: 10px;
-            left: 20px;
+            right: 20px;
             font-size: 12px;
             color: #808495;
             z-index: 999;
@@ -132,7 +142,3 @@ def apply_layout():
             </div>
         </div>
     """, unsafe_allow_html=True)
-
-# ----- TABELA -----
-def zebra_style(linha):
-    return ["background-color: #242830" if linha.name % 2 != 0 else "" for _ in linha]
