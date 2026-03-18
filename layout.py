@@ -70,7 +70,7 @@ def apply_layout():
         .dev-footer {
             position: fixed;
             bottom: 10px;
-            right: 20px;
+            left: 20px;
             font-size: 12px;
             color: #808495;
             z-index: 999;
