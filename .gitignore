@@ -40,8 +40,8 @@ Thumbs.db
 
 # Dados sensíveis
 data/*.csv
-!data/turmas_professores.csv
-!data/dados_2025_ausencias.csv
+!data/turmas_professores_demo.csv
+!data/dados_ausencias_demo.csv
 
 # Scripts locais com senhas
 setup_local_database.py
