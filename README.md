@@ -2,7 +2,7 @@
 
 > Sistema de gestão de ausências com autenticação, controle de acesso baseado em funções (RBAC) e interface intuitiva. Todos os dados das ausências são fictícios.
 
-**[🚀 Acesse a Demo Aqui](SEU_LINK_AQUI)**
+**[🚀 Acesse a Demo Aqui](https://sistema-ausencias-demo.streamlit.app/)**
 
 > ⚠️ **Nota:** Esta é uma versão de demonstração com 5.000 registros 
 > fictícios gerados para fins de portfólio. O sistema foi originalmente 
